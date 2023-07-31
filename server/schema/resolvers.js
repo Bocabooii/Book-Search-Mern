@@ -1,4 +1,4 @@
-const { Product } = require("../models"); // Assuming you have a "Product" model
+const { User } = require("../models/User"); // Assuming you have a "Product" model
 const { signToken } = require("../utils/auth");
 const { AuthenticationError } = require("apollo-server-express");
 
@@ -6,7 +6,7 @@ const resolvers = {
   Query: {
     me: async (parent, args, context) => {
       if (context.user) {
-        const productData = await Product.findOne({ _id: context.user._id }).select("-__v -password");
+        const productData = await User.findOne({ _id: context.user._id }).select("-__v -password");
         return productData;
       }
       throw new AuthenticationError("You need to be logged in!");
@@ -14,14 +14,14 @@ const resolvers = {
   },
 
   Mutation: {
-    addProduct: async (parent, args) => {
-      const product = await Product.create(args);
+    addUser: async (parent, args) => {
+      const product = await User.create(args);
       const token = signToken(product);
       return { token, product };
     },
 
     login: async (parent, { email, password }, context) => {
-      const product = await Product.findOne({ email });
+      const product = await User.findOne({ email });
       if (!product) {
         throw new AuthenticationError("Incorrect email or password");
       }
@@ -35,24 +35,24 @@ const resolvers = {
 
     saveBook: async (parent, { bookData }, context) => {
       if (context.user) {
-        const updatedProduct = await Product.findByIdAndUpdate(
+        const updatedProduct = await User.findByIdAndUpdate(
           { _id: context.user._id },
           { $push: { savedBooks: bookData } },
           { new: true }
         );
-        return updatedProduct;
+        return updatedUser;
       }
       throw new AuthenticationError("You need to be logged in!");
     },
 
     removeBook: async (parent, { bookId }, context) => {
       if (context.user) {
-        const currentProduct = await Product.findOneAndUpdate(
+        const currentUser = await User.findOneAndUpdate(
           { _id: context.user._id },
           { $pull: { savedBooks: { bookId } } },
           { new: true }
         );
-        return currentProduct;
+        return currentUser;
       }
       throw new AuthenticationError("You need to be logged in!");
     },
